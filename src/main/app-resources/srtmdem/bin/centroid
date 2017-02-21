@@ -1,8 +1,5 @@
 #!/usr/bin/Rscript --vanilla --slave --quiet
 
-# load the rciop package
-library("rciop")
-
 # load the rgeos package silently
 suppressMessages(library(rgeos))
 

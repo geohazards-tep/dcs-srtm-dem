@@ -47,8 +47,10 @@
                 <configuration>
                   <!-- Set here the dependencies installed with 'sudo yum install'-->
                   <requires>
+                    <require>miniconda</require>
                     <require>GMTSAR</require>
                     <require>csh</require>
+                    <require>Xvfb</require>
                   </requires>
                 </configuration>
               </execution>
