@@ -68,8 +68,11 @@ function main() {
   while read inputfile
   do
 
-    dem_name=$( opensearch-client "$inputfile" identifier ) 
+    dem_name=$( uuidgen ) 
     [ -z "${dem_name}" ] && return ${ERR_NOIDENTIFIER} 
+
+    wkt="$( opensearch-client "$inputfile" wkt )"
+    ciop-log "DEBUG" "wkt is ${wkt}"
 
     # the centroid R script get the WKT footprint and calculates the geometry centroid
     pts=$( centroid "${inputfile}" )
@@ -81,45 +84,41 @@ function main() {
     # GMTSAR
     [ ${flag} == "true" ] && {
 
-      # invoke make_dem.csh
-      #recreate a 3 deg bbox around the centroid lon/lat
-    
-      lon1=$( echo "${lon} - 1.5" | bc ) 
-      lon2=$( echo "${lon} + 1.5" | bc )
-      lat1=$( echo "${lat} - 1.5" | bc )
-      lat2=$( echo "${lat} + 1.5" | bc )
+      bbox=$( mbr "${wkt}" )
 
-      ciop-log "INFO" "using GMTSAR with coords ${lon1} ${lat1} ${lon2} ${lat2}"
+      lon1=$( echo "$( echo "${bbox}" | cut -d "," -f 1 ) -1.5" | bc | cut -d "." -f 1 )
+      lon2=$( echo "$( echo "${bbox}" | cut -d "," -f 2 ) +1.5" | bc | cut -d "." -f 1 )
+      lat1=$( echo "$( echo "${bbox}" | cut -d "," -f 3 ) -1.5" | bc | cut -d "." -f 1 )
+      lat2=$( echo "$( echo "${bbox}" | cut -d "," -f 4 ) +1.5" | bc | cut -d "." -f 1 )
+    
+      ciop-log "INFO" "using GMTSAR with coords ${lon1} ${lat1} ${lon2} ${lat2} [bbox=$bbox]"
 
       cd ${TMPDIR}
 
       export PATH=${PATH}:${GMTSAR_HOME}
       ${GMTSAR_HOME}/make_dem.csh ${lon1} ${lon2} ${lat1} ${lat2} 2 ${SRTM3}
       
-      [ -e dem.grd ] && return ${ERR_GMTSAR}
+      [ ! -e dem.grd ] && return ${ERR_GMTSAR}
+   
+      # save the bandwidth
+      ciop-log "INFO" "Compressing DEM"
     
-      #rename the output
-      mv dem.grd ${dem_name}.dem
-      mv dem_grad.png ${dem_name}.png
-      mv dem_grad.kml ${dem_name}.kml
+      tar cfz ${dem_name}.dem.tgz dem*
+      rm -fr dem* 
     
     } || {
-
-      # use the dataset identifier as filename for the result
-      # SRTM.py concatenates .dem.<extension>
 
       # invoke the SRTM.py
       ciop-log "INFO" "Generating DEM"
       SRTM.py ${lat} ${lon} ${TMPDIR}/${dem_name} -D ${SRTM1} ${option} 1>&2
-    } 
-
-    # check the output
-    [ ! -e ${TMPDIR}/${dem_name}.dem ] && return ${ERR_NODEM}
-
-    # save the bandwidth 
-    ciop-log "INFO" "Compressing DEM"
-    tar cfz ${dem_name}.dem.tgz ${dem_name}*   
+      [ ! -e ${dem_name.dem} ] && return ${ERR_NODEM}
+     
+      # save the bandwidth 
+      ciop-log "INFO" "Compressing DEM"
+      tar cfz ${dem_name}.dem.tgz ${dem_name}*   
  
+    }
+
     # have the compressed archive published and its reference exposed as metalink
     ciop-log "INFO" "Publishing results"
     ciop-publish -m ${TMPDIR}/${dem_name}.dem.tgz  

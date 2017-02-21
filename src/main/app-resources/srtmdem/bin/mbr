@@ -1,0 +1,16 @@
+#!/usr/bin/Rscript --vanilla --slave --quiet
+
+# load the rgeos package silently
+suppressMessages(library(rgeos))
+
+# read the catalogue dataset entry
+args <- commandArgs(trailingOnly = TRUE)
+
+wkt <- args[1]
+
+# get the centroid
+mbr <- gEnvelope(readWKT(wkt))
+
+# print it to the stdout
+cat(paste(mbr@bbox[1,1], mbr@bbox[1,2], mbr@bbox[2,1], mbr@bbox[2,2], sep=","))
+
