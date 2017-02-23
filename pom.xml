@@ -52,7 +52,7 @@
                     <require>csh</require>
                     <require>Xvfb</require>
                   </requires>
-                  <defineStatements>
+                  <!--><defineStatements>
                     <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
                   </defineStatements>
                   <mappings combine.children="append">
@@ -67,7 +67,7 @@
                   </mappings>
                   <postinstallScriptlet combine.children="append">
                     <script>conda install -y --file /application/dependencies/python/packages.list</script>
-                  </postinstallScriptlet>
+                  </postinstallScriptlet>-->
                 </configuration>
               </execution>
             </executions>
