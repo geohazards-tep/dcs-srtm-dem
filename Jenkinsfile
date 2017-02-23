@@ -1,6 +1,11 @@
-node {
-  stage 'Build and Deploy'
-  env.PATH = "${tool 'apache-maven-3.0.5'}/bin:${env.PATH}"
+node('ci-community') {
+
+  stage 'Checkout'
   checkout scm
-  sh 'mvn clean deploy'
+
+  stage 'Setup environment'
+  env.PATH = "${tool 'apache-maven-3.0.5'}/bin:${env.PATH}"
+
+  stage 'Package and Deploy'
+  sh 'mvn deploy'
 }
