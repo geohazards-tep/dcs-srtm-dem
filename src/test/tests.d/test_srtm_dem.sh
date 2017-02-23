@@ -20,4 +20,12 @@ test_bash_n_lib() {
 
 }
 
+test_r_geos() {
+
+  R -e "library('rgeos')" &> /dev/null
+  res=$?
+  assertEquals "R couldn't load rgeos package" \
+  "0" "${res}"
+
+}
 . ${SHUNIT2_HOME}/shunit2

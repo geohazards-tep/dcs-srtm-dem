@@ -7,6 +7,7 @@ ERR_INVALIDFORMAT=2
 ERR_NOIDENTIFIER=5
 ERR_NODEM=7
 ERR_GMTSAR=10
+ERR_CENTROID=20
 
 # add a trap to exit gracefully
 function cleanExit () {
@@ -20,6 +21,7 @@ function cleanExit () {
    ${ERR_NOIDENTIFIER})  msg="Could not retrieve the dataset identifier";;
    ${ERR_NODEM})         msg="DEM not generated";;
    ${ERR_GMTSAR})	 msg="GMTSAR failed to generate DEM";;
+   ${ERR_CENTROID})	 msg="Failed to extract centroid from WKT";;
    *) msg="Unknown error";;
   esac
 
@@ -33,8 +35,6 @@ trap cleanExit EXIT
 function set_env() {
 
   export PATH=${_CIOP_APPLICATION_PATH}/srtmdem/bin:${PATH}
-
-  export DISPLAY=:1.0
 
   # SRTM.py uses matplotlib, set a temporary directory
   export MPLCONFIGDIR=${TMPDIR}/
@@ -75,14 +75,16 @@ function main() {
     ciop-log "DEBUG" "wkt is ${wkt}"
 
     # the centroid R script get the WKT footprint and calculates the geometry centroid
-    pts=$( centroid "${inputfile}" )
+    pts=$( centroid "${wkt}" )
+    [ -z "${pts}" ] && return ${ERR_CENTROID}    
+
     lon=$( echo ${pts} | cut -d " " -f 1 )
     lat=$( echo ${pts} | cut -d " " -f 2 )
 
     ciop-log "INFO" "$( basename "${inputfile}" ) centroid is (${lon} ${lat})"
 
     # GMTSAR
-    [ ${flag} == "true" ] && {
+    [ "${flag}" == "true" ] && {
 
       bbox=$( mbr "${wkt}" )
 
@@ -111,7 +113,7 @@ function main() {
       # invoke the SRTM.py
       ciop-log "INFO" "Generating DEM"
       SRTM.py ${lat} ${lon} ${TMPDIR}/${dem_name} -D ${SRTM1} ${option} 1>&2
-      [ ! -e ${dem_name.dem} ] && return ${ERR_NODEM}
+      [ ! -e ${dem_name}.dem ] && return ${ERR_NODEM}
      
       # save the bandwidth 
       ciop-log "INFO" "Compressing DEM"

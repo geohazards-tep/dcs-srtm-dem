@@ -1,13 +1,13 @@
-#!/bin/env python
+#!/opt/anaconda/bin/python
 # mosaic geo-tiff SRTM V4 DEM
 # create roi-pac or Gamma headers
 # by Ran Novitsky Nof 2011
 
 
-import Image,sys,os,glob,getopt,scipy.misc,time
+import sys,os,glob,getopt,scipy.misc,time
 from pylab import *
 from string import join
-
+from PIL import Image
 def usage():
   sys.exit("""
 Getting SRTM v4 DEM and preparing it for ROI_PAC or Gamma processing

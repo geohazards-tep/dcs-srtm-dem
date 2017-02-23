@@ -1,17 +1,17 @@
-#!/usr/bin/Rscript --vanilla --slave --quiet
+#!/opt/anaconda/bin/Rscript --vanilla --slave --quiet
 
 # load the rgeos package silently
 suppressMessages(library(rgeos))
 
 # read the catalogue dataset entry
 args <- commandArgs(trailingOnly = TRUE)
-dataset <- args[1]
+wkt <- args[1]
 
 # extract the dct:spatial metadata field (WKT footprint)
-wkt <- rciop.casmeta("dct:spatial", dataset)$output
+#wkt <- rciop.casmeta("dct:spatial", dataset)$output
 
 # get the centroid
-centroid <- gCentroid(readWKT(wkt[1]))
+centroid <- gCentroid(readWKT(wkt))
 
 # print it to the stdout
 cat(paste(centroid@coords[1], centroid@coords[2], sep=" "))
