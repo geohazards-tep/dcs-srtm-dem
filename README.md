@@ -77,6 +77,7 @@ To learn more and find information go to
 * Barchetta Francesco
 * Brito Fabrice
 * D'Andria Fabio
+* Rossi Cesare
 
 ### <a name="questions"></a>Questions, bugs, and suggestions
 
